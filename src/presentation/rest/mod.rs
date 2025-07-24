@@ -32,7 +32,7 @@ mod middleware;
 mod release;
 mod song;
 mod song_lyrics;
-mod state;
+pub mod state;
 mod tag;
 mod user;
 
@@ -78,7 +78,7 @@ pub async fn listen(
     Ok(())
 }
 
-fn router(state: ArcAppState) -> Router {
+pub fn router(state: ArcAppState) -> Router {
     let api_router = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .merge(artist::router())
         .merge(correction::router())
