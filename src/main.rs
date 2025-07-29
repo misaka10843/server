@@ -1,47 +1,8 @@
-#![deny(unused_must_use, unconditional_recursion)]
-#![deny(clippy::clone_on_copy)]
-#![warn(clippy::cargo, clippy::nursery, clippy::pedantic)]
-#![warn(clippy::allow_attributes)]
-#![allow(dead_code, async_fn_in_trait, unused_imports)]
-#![allow(
-    // We won't release
-    clippy::cargo_common_metadata,
-    clippy::missing_docs_in_private_items,
-    // Detection is not smart
-    clippy::cognitive_complexity,
-    // Sometimes useful
-    clippy::enum_glob_use,
-    clippy::wildcard_imports,
-    clippy::iter_on_single_items,
-    clippy::multiple_crate_versions,
-    clippy::single_call_fn,
-    clippy::unreadable_literal,
-    // Sometimes annoying
-    clippy::use_self,
-)]
-#![feature(
-    bool_to_result,
-    error_generic_member_access,
-    min_specialization,
-    new_range_api,
-    return_type_notation,
-    trait_alias,
-    try_blocks,
-    variant_count
-)]
-
-mod application;
-mod constant;
-mod domain;
-mod infra;
-mod presentation;
-mod utils;
-
 use std::sync::Arc;
 
-use infra::logger::Logger;
-use infra::singleton::APP_CONFIG;
-use infra::state::AppState;
+use thcdb_rs::infra::logger::Logger;
+use thcdb_rs::infra::singleton::APP_CONFIG;
+use thcdb_rs::infra::state::AppState;
 
 use self::infra::worker::Worker;
 
@@ -78,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         APP_CONFIG.app.port
     );
 
-    presentation::rest::listen(listener, Arc::new(state)).await?;
+    thcdb_rs::presentation::rest::listen(listener, Arc::new(state)).await?;
 
     Ok(())
 }
