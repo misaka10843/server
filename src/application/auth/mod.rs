@@ -149,7 +149,19 @@ where
 
         let tx_repo = self.repo.begin().await?;
 
-        let user = tx_repo.create(creds.try_into()?).await?;
+        let user = match creds.try_into() {
+            Ok(c) => match tx_repo.create(c).await {
+                Ok(user) => user,
+                Err(e) => {
+                    eprintln!("❌ tx_repo.create failed: {e:?}");
+                    return Err(e.into());
+                }
+            },
+            Err(e) => {
+                eprintln!("❌ creds.try_into failed: {e:?}");
+                return Err(e.into());
+            }
+        };
 
         tx_repo.commit().await?;
 

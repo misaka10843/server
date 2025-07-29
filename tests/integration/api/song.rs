@@ -120,7 +120,7 @@ async fn test_update_song() {
 
     let response = app
         .client
-        .put_json(&format!("/song/{}", song.id), &update_data)
+        .post_json(&format!("/song/{}", song.id), &update_data)
         .await
         .expect("Failed to make request");
 

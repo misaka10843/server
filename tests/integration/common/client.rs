@@ -48,13 +48,11 @@ impl TestClient {
         path: &str,
         body: &T,
     ) -> Result<TestResponse, TestError> {
-        let json_body = serde_json::to_string(body)?;
-
         let mut request = self
             .server
             .post(path)
             .content_type("application/json")
-            .text(json_body);
+            .json(body);
 
         if let Some(token) = &self.auth_token {
             request = request

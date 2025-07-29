@@ -26,6 +26,7 @@ impl Deref for ArcAppState {
 }
 
 impl ArcAppState {
+    #[must_use]
     pub const fn new(state: Arc<AppState>) -> Self {
         Self(state)
     }

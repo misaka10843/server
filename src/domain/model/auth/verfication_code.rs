@@ -8,7 +8,14 @@ pub struct VerificationCode<const N: usize> {
     digits: [u8; N],
 }
 
+impl<const N: usize> Default for VerificationCode<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<const N: usize> VerificationCode<N> {
+    #[must_use]
     pub fn new() -> Self {
         let mut rng = rand::rng();
 

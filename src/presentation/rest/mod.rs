@@ -77,6 +77,23 @@ pub async fn listen(
 
     Ok(())
 }
+pub fn test_router(state: ArcAppState) -> Router {
+    OpenApiRouter::new()
+        .routes(routes!(health_check))
+        .route("/", get(home_page))
+        .merge(artist::router())
+        .merge(correction::router())
+        .merge(event::router())
+        .merge(label::router())
+        .merge(enum_table::router())
+        .merge(release::router())
+        .merge(song::router())
+        .merge(song_lyrics::router())
+        .merge(tag::router())
+        .merge(user::router())
+        .pipe(|this| append_test_global_middlewares(this.into(), &state))
+        .with_state(state)
+}
 
 pub fn router(state: ArcAppState) -> Router {
     let api_router = OpenApiRouter::with_openapi(ApiDoc::openapi())
@@ -184,6 +201,8 @@ macro_rules! router_new {
     }
 }
 use router_new;
+
+use crate::presentation::rest::middleware::append_test_global_middlewares;
 
 #[cfg(test)]
 mod test {

@@ -19,6 +19,17 @@ pub struct AppState {
 }
 
 impl AppState {
+    /// create app state for integration test
+    pub async fn init_test(conn: DatabaseConnection, config: &Config) -> Self {
+        Self {
+            database: conn.clone(),
+            redis_pool: Pool::init(&config.redis_url).await.inner,
+            transport: AsyncSmtpTransport::<Tokio1Executor>::relay("")
+                .unwrap()
+                .build(),
+            sea_orm_repo: SeaOrmRepository::new(conn.clone()),
+        }
+    }
     pub async fn init(config: &Config) -> Self {
         let conn = get_connection(&config.database_url).await;
         let redis_pool = Pool::init(&config.redis_url).await.inner;
@@ -43,6 +54,7 @@ impl AppState {
 }
 
 impl AppState {
+    #[must_use]
     pub fn redis_pool(&self) -> fred::prelude::Pool {
         self.redis_pool.clone()
     }

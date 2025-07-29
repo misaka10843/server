@@ -28,6 +28,16 @@ pub trait AxumLayerBounds = where
     <Self::Service as Service<Request>>::Error: Into<Infallible> + 'static,
     <Self::Service as Service<Request>>::Future: Send + 'static;
 
+pub fn append_test_global_middlewares<S>(
+    router: Router<S>,
+    state: &ArcAppState,
+) -> Router<S>
+where
+    S: Send + Sync + Clone + 'static,
+{
+    router.layer(auth_layer(state))
+}
+
 pub fn append_global_middlewares<S>(
     router: Router<S>,
     state: &ArcAppState,

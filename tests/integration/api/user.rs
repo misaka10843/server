@@ -10,16 +10,14 @@ async fn test_user_sign_up() {
     let app = TestApp::new().await.expect("Failed to create test app");
 
     let signup_data = json!({
-        "name": "testuser",
-        "password": "testpassword123"
+        "username": "testuser",
+        "password": "testpassword123@!"
     });
-
     let response = app
         .client
         .post_json("/sign_up", &signup_data)
         .await
         .expect("Failed to make request");
-
     response.assert_success();
 }
 
@@ -40,7 +38,7 @@ async fn test_user_sign_up_duplicate_name() {
     // Try to sign up with the same name
     let signup_data = json!({
         "name": "testuser",
-        "password": "testpassword123"
+        "password": "testpassword123@!"
     });
 
     let response = app
@@ -58,8 +56,8 @@ async fn test_user_sign_in() {
 
     // First sign up a user
     let signup_data = json!({
-        "name": "testuser",
-        "password": "testpassword123"
+        "username": "testuser",
+        "password": "testpassword123@!"
     });
 
     app.client
@@ -70,8 +68,8 @@ async fn test_user_sign_in() {
 
     // Then try to sign in
     let signin_data = json!({
-        "name": "testuser",
-        "password": "testpassword123"
+        "username": "testuser",
+        "password": "testpassword123@!"
     });
 
     let response = app
@@ -88,7 +86,7 @@ async fn test_user_sign_in_invalid_credentials() {
     let app = TestApp::new().await.expect("Failed to create test app");
 
     let signin_data = json!({
-        "name": "nonexistent",
+        "username": "nonexistent",
         "password": "wrongpassword"
     });
 
@@ -140,9 +138,8 @@ async fn test_user_update_bio() {
     // Without authentication, this should fail
     let response = app
         .client
-        .patch_json("/update_bio", &bio_data)
+        .post_json("/profile/bio", &bio_data)
         .await
         .expect("Failed to make request");
-
     response.assert_status(StatusCode::UNAUTHORIZED);
 }

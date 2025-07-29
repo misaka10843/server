@@ -17,6 +17,7 @@ proc_macros = { path = "crates/proc_macros" }
 # external
 argon2 = "0.5"
 axum = { version = "0.8", features = [
+    "json",
     "macros",
     "multipart",
 ] }
@@ -183,15 +184,15 @@ axum-test = "17.3.0"
 fake = { version = "4.3.0", features = [
     "derive",
 ] }
-postgresql_embedded = "0.19.0"
+postgresql_embedded = { version = "0.19.0", features = [ "bundled" ] }
 rusty-hook = "=0.11.2"
 tokio-test = "0.4"
 
 # https://doc.rust-lang.org/cargo/reference/profiles.html
 [profile.dev]
-debug     = 0
-opt-level = 1
-strip     = "debuginfo"
+debug     = 2
+opt-level = 0
+strip     = "none"
 # If you get incremental compilation ICE, disable it
 # incremental     = false
 

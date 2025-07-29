@@ -7,12 +7,21 @@ pub mod test_utils;
 use std::sync::Arc;
 
 use axum::Router;
+use axum::routing::{get, post};
 use axum_test::TestServer;
+use axum_test::http::StatusCode;
 pub use client::TestClient;
 pub use database::{TestDatabase, TestError};
 pub use fixtures::TestFixtures;
+use sea_orm::DatabaseConnection;
 pub use test_utils::*;
-
+use thcdb_rs::infra::database::sea_orm::enum_table::{
+    sync_enum_table, sync_test_enum_table,
+};
+use thcdb_rs::infra::singleton::APP_CONFIG;
+use thcdb_rs::infra::state::AppState;
+use thcdb_rs::presentation::rest::state::ArcAppState;
+use thcdb_rs::presentation::rest::{router, test_router};
 // Import the actual application modules from the main crate (for future use)
 // use thcdb_rs::infra::state::AppState;
 // use thcdb_rs::presentation::rest::state::ArcAppState;
@@ -34,10 +43,14 @@ impl TestApp {
     pub async fn new() -> Result<Self, TestError> {
         // Initialize test database
         let database = TestDatabase::new().await?;
+        let conn = database.connection().clone();
+        sync_test_enum_table(&conn)
+            .await
+            .expect("Failed to sync enum tables");
 
         // For now, use the simple test router until we can properly set up the full app state
         // TODO: Create proper test app state and use the real router
-        let app = create_simple_test_router();
+        let app = create_simple_test_router(conn.clone()).await;
 
         // Create test server
         let server =
@@ -48,7 +61,7 @@ impl TestApp {
         let client = TestClient::new(server.clone());
 
         // Create test fixtures
-        let fixtures = TestFixtures::new(database.connection().clone());
+        let fixtures = TestFixtures::new(conn.clone());
 
         Ok(Self {
             database,
@@ -153,12 +166,12 @@ impl TestApp {
 // }
 
 /// Create a simple test router for basic testing
-fn create_simple_test_router() -> Router {
-    use axum::http::StatusCode;
-    use axum::routing::get;
-
-    Router::new()
-        .route("/health_check", get(|| async { StatusCode::OK }))
-        .route("/", get(|| async { "Welcome to test server" }))
+async fn create_simple_test_router(conn: DatabaseConnection) -> Router {
+    test_router(ArcAppState::new(Arc::new(
+        AppState::init_test(conn, &APP_CONFIG).await,
+    )))
+    // Router::new()
+    //     .route("/sign_up", post(|| async { StatusCode::OK }))
+    //     .route("/", get(|| async { "Welcome to test server" }))
     // Add more basic routes as needed for testing
 }

@@ -11,6 +11,7 @@ mod verfication_code;
 pub struct CorrectionApprover(pub User);
 
 impl CorrectionApprover {
+    #[must_use]
     pub fn from_user(user: User) -> Option<Self> {
         user.has_roles(&[UserRoleEnum::Admin, UserRoleEnum::Moderator])
             .then_some(Self(user))
