@@ -18,6 +18,8 @@
     clippy::unreadable_literal,
     // Sometimes annoying
     clippy::use_self,
+    clippy::missing_panics_doc,
+    clippy::missing_errors_doc,
 )]
 #![feature(
     bool_to_result,

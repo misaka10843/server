@@ -5296,6 +5296,7 @@ name = "thcdb_rs"
 version = "0.1.0"
 dependencies = [
  "ammonia",
+ "anyhow",
  "argon2",
  "async-trait",
  "axum",
