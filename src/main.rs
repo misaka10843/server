@@ -3,8 +3,7 @@ use std::sync::Arc;
 use thcdb_rs::infra::logger::Logger;
 use thcdb_rs::infra::singleton::APP_CONFIG;
 use thcdb_rs::infra::state::AppState;
-
-use self::infra::worker::Worker;
+use thcdb_rs::infra::worker::Worker;
 
 #[cfg(all(feature = "release", unix))]
 mod alloc {

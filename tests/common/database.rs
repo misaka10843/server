@@ -3,7 +3,7 @@ use sea_orm::DatabaseConnection;
 use thcdb_rs::infra::database::get_connection;
 
 pub struct TestDatabase {
-    instance: postgresql_embedded::PostgreSQL,
+    instance: PostgreSQL,
     connection: DatabaseConnection,
 }
 
@@ -11,7 +11,7 @@ const DATABASE_NAME: &str = "thcdb_test";
 
 impl TestDatabase {
     pub async fn new() -> anyhow::Result<Self> {
-        let mut postgresql = postgresql_embedded::PostgreSQL::default();
+        let mut postgresql = PostgreSQL::default();
         postgresql.setup().await?;
         postgresql.start().await?;
 
