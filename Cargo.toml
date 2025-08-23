@@ -201,9 +201,9 @@ rusty-hook = "=0.11.2"
 
 # https://doc.rust-lang.org/cargo/reference/profiles.html
 [profile.dev]
-debug     = 0
-opt-level = 1
-strip     = "debuginfo"
+debug     = 2
+opt-level = 0
+strip     = "none"
 # If you get incremental compilation ICE, disable it
 # incremental     = false
 
