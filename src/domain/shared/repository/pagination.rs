@@ -9,7 +9,6 @@ pub struct Paginated<T> {
 }
 
 impl<T> Paginated<T> {
-
     pub const fn nothing() -> Self {
         Self {
             items: vec![],

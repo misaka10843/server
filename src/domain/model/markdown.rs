@@ -68,7 +68,6 @@ impl Markdown {
 }
 
 impl Markdown {
-
     pub const fn as_str(&self) -> &str {
         self.0.as_str()
     }

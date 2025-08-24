@@ -43,7 +43,6 @@ impl AppState {
 }
 
 impl AppState {
-
     pub fn redis_pool(&self) -> fred::prelude::Pool {
         self.redis_pool.clone()
     }

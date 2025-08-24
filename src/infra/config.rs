@@ -29,7 +29,6 @@ nest! {
 impl Copy for LimitMiddleware {}
 
 impl Config {
-
     pub fn init() -> Self {
         config::Config::builder()
             .add_source(config::File::with_name("config"))

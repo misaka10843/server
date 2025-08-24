@@ -19,11 +19,9 @@ pub struct DateWithPrecision {
 }
 
 impl DateWithPrecision {
-
     pub const fn destruct(self) -> (NaiveDate, DatePrecision) {
         (self.value, self.precision)
     }
-
 
     pub const fn from_option(
         value: Option<NaiveDate>,
@@ -111,7 +109,6 @@ pub struct Location {
 }
 
 impl Location {
-
     pub const fn is_empty(&self) -> bool {
         matches!(
             self,

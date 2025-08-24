@@ -33,7 +33,6 @@ pub struct EntityNotFound {
 }
 
 impl InvalidField {
-
     pub fn new(field: String, expected: String, received: String) -> Self {
         Self {
             field,
@@ -45,7 +44,6 @@ impl InvalidField {
 }
 
 impl Unauthorized {
-
     pub fn new() -> Self {
         Self {
             backtrace: Backtrace::capture(),
@@ -60,7 +58,6 @@ impl Default for Unauthorized {
 }
 
 impl EntityNotFound {
-
     pub fn new(entity_id: i32, entity_type: &'static str) -> Self {
         Self {
             entity_id,

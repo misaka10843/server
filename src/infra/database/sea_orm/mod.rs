@@ -35,7 +35,6 @@ pub struct SeaOrmRepository {
 }
 
 impl SeaOrmRepository {
-
     pub const fn new(conn: sea_orm::DatabaseConnection) -> Self {
         Self { conn }
     }

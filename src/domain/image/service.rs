@@ -85,7 +85,6 @@ pub struct InvalidForamt {
 }
 
 impl InvalidForamt {
-
     pub fn new(
         received: ImageFormat,
         expected: &'static [ImageFormat],
@@ -96,7 +95,6 @@ impl InvalidForamt {
             backtrace: Backtrace::capture(),
         }
     }
-
 
     pub fn unknown(expected: &'static [ImageFormat]) -> Self {
         Self {
@@ -182,7 +180,6 @@ pub struct InvalidRatio {
 }
 
 impl InvalidRatio {
-
     pub fn new(received: f64, expected: RangeInclusive<f64>) -> Self {
         Self {
             received,
@@ -232,7 +229,6 @@ impl ParseOption {
         end: 1.0,
     };
 
-
     pub const fn into_parser(self) -> Parser {
         Parser::new(self)
     }
@@ -259,7 +255,6 @@ pub struct Parser {
 }
 
 impl Parser {
-
     pub const fn new(option: ParseOption) -> Self {
         Self { option }
     }

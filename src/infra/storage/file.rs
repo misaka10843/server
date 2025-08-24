@@ -22,7 +22,6 @@ pub struct GenericFileStorageConfig {
 }
 
 impl GenericFileStorage {
-
     pub fn new(
         GenericFileStorageConfig {
             fs_base_path,

@@ -7,7 +7,6 @@ pub struct Sender {
 }
 
 impl Sender {
-
     pub const fn new(transport: AsyncSmtpTransport<Tokio1Executor>) -> Self {
         Self { transport }
     }
