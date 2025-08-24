@@ -41,7 +41,6 @@ pub struct User {
 }
 
 impl User {
-    #[must_use]
     pub fn has_roles(&self, expected: &[UserRoleEnum]) -> bool {
         self.roles.iter().any(|r| {
             UserRoleEnum::try_from(r.id)

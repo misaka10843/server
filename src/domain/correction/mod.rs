@@ -28,7 +28,7 @@ pub enum CorrectionFilterStatus {
 }
 
 impl CorrectionFilter {
-    #[must_use]
+
     pub fn pending(entity_id: i32, entity_type: EntityType) -> Self {
         Self {
             entity_id,
@@ -37,7 +37,7 @@ impl CorrectionFilter {
         }
     }
 
-    #[must_use]
+
     pub const fn latest(entity_id: i32, entity_type: EntityType) -> Self {
         Self {
             entity_id,

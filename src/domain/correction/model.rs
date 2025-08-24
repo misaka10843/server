@@ -46,7 +46,7 @@ where
     T: CorrectionEntity,
 {
     #[expect(clippy::unused_self)]
-    #[must_use]
+
     pub fn entity_type(&self) -> EntityType {
         T::entity_type()
     }

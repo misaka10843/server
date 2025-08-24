@@ -15,7 +15,7 @@ impl<const N: usize> Default for VerificationCode<N> {
 }
 
 impl<const N: usize> VerificationCode<N> {
-    #[must_use]
+
     pub fn new() -> Self {
         let mut rng = rand::rng();
 

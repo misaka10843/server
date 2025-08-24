@@ -13,7 +13,6 @@ pub struct ArtistImageQueue {
 }
 
 impl ArtistImageQueue {
-    #[must_use]
     pub const fn profile(artist_id: i32, queue_id: i32) -> Self {
         Self {
             artist_id,

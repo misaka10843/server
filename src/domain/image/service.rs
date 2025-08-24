@@ -85,7 +85,7 @@ pub struct InvalidForamt {
 }
 
 impl InvalidForamt {
-    #[must_use]
+
     pub fn new(
         received: ImageFormat,
         expected: &'static [ImageFormat],
@@ -97,7 +97,7 @@ impl InvalidForamt {
         }
     }
 
-    #[must_use]
+
     pub fn unknown(expected: &'static [ImageFormat]) -> Self {
         Self {
             received: None,
@@ -182,7 +182,7 @@ pub struct InvalidRatio {
 }
 
 impl InvalidRatio {
-    #[must_use]
+
     pub fn new(received: f64, expected: RangeInclusive<f64>) -> Self {
         Self {
             received,
@@ -232,7 +232,7 @@ impl ParseOption {
         end: 1.0,
     };
 
-    #[must_use]
+
     pub const fn into_parser(self) -> Parser {
         Parser::new(self)
     }
@@ -259,7 +259,7 @@ pub struct Parser {
 }
 
 impl Parser {
-    #[must_use]
+
     pub const fn new(option: ParseOption) -> Self {
         Self { option }
     }
