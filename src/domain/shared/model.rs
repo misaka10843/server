@@ -1,6 +1,5 @@
 use chrono::NaiveDate;
 use derive_more::{Display, Into};
-use entity::credit_role::Model as DbCreditRole;
 use entity::language::Model as DbLanguage;
 use macros::AutoMapper;
 use serde::{Deserialize, Serialize};
@@ -20,10 +19,12 @@ pub struct DateWithPrecision {
 }
 
 impl DateWithPrecision {
+    #[must_use]
     pub const fn destruct(self) -> (NaiveDate, DatePrecision) {
         (self.value, self.precision)
     }
 
+    #[must_use]
     pub const fn from_option(
         value: Option<NaiveDate>,
         precision: DatePrecision,
@@ -110,6 +111,7 @@ pub struct Location {
 }
 
 impl Location {
+    #[must_use]
     pub const fn is_empty(&self) -> bool {
         matches!(
             self,

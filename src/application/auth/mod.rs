@@ -44,6 +44,7 @@ pub enum SignUpError {
 }
 
 impl SignUpError {
+    #[must_use]
     pub fn username_already_in_use() -> Self {
         Self::UsernameAlreadyInUse {
             backtrace: Backtrace::capture(),
@@ -79,6 +80,7 @@ pub enum SignInError {
 }
 
 impl SignInError {
+    #[must_use]
     pub fn already_signed_in() -> Self {
         Self::AlreadySignedIn {
             backtrace: Backtrace::capture(),
@@ -99,6 +101,7 @@ pub struct SessionError {
 }
 
 impl SessionError {
+    #[must_use]
     pub fn new(source: axum_login::tower_sessions::session::Error) -> Self {
         Self {
             source,

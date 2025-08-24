@@ -14,7 +14,6 @@ use crate::domain::credit_role::*;
 use crate::domain::query_kind;
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
-use crate::presentation::rest::state;
 use crate::presentation::rest::state::{ArcAppState, CreditRoleService};
 
 const TAG: &str = "Credit Role";

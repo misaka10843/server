@@ -126,6 +126,7 @@ pub struct NewImageQueue {
 }
 
 impl NewImageQueue {
+    #[must_use]
     pub const fn new(user: &User, image: &Image) -> Self {
         Self {
             image_id: image.id,

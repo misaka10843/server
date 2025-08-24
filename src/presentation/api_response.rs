@@ -102,6 +102,7 @@ pub struct Message {
 }
 
 impl Message {
+    #[must_use]
     pub fn ok() -> Self {
         Self {
             status: Status::Ok,
@@ -186,6 +187,7 @@ impl Error {
         }
     }
 
+    #[must_use]
     pub fn response_def() -> utoipa::openapi::Response {
         ResponseBuilder::new()
             .content(
@@ -224,6 +226,7 @@ where
     }
 }
 
+#[must_use]
 pub fn status_ok_schema() -> impl Into<RefOr<Schema>> {
     ObjectBuilder::new()
         .schema_type(openapi::Type::String)
@@ -231,6 +234,7 @@ pub fn status_ok_schema() -> impl Into<RefOr<Schema>> {
         .build()
 }
 
+#[must_use]
 pub fn status_err_schema() -> impl Into<RefOr<Schema>> {
     ObjectBuilder::new()
         .schema_type(openapi::Type::String)

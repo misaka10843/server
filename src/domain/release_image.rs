@@ -13,6 +13,7 @@ pub struct ReleaseImage {
 }
 
 impl ReleaseImage {
+    #[must_use]
     pub const fn new(
         release_id: i32,
         image_id: i32,
@@ -25,6 +26,7 @@ impl ReleaseImage {
         }
     }
 
+    #[must_use]
     pub const fn cover(release_id: i32, image_id: i32) -> Self {
         Self {
             release_id,

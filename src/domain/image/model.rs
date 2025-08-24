@@ -24,6 +24,7 @@ pub struct Image {
 }
 
 impl Image {
+    #[must_use]
     pub fn full_path(&self) -> PathBuf {
         Image::full_path_impl(&self.directory, &self.filename)
     }
@@ -32,10 +33,12 @@ impl Image {
         PathBuf::from_iter([directory, filename])
     }
 
+    #[must_use]
     pub fn url(&self) -> String {
         Self::format_url(self.backend, &self.directory, &self.filename)
     }
 
+    #[must_use]
     pub fn format_url(
         backend: StorageBackend,
         directory: &str,
@@ -61,6 +64,7 @@ pub struct NewImage {
 }
 
 impl NewImage {
+    #[must_use]
     pub fn from_parsed(
         parsed: ParsedImage,
         uploaded_by: i32,
@@ -85,11 +89,13 @@ impl NewImage {
         }
     }
 
+    #[must_use]
     pub fn full_path(&self) -> PathBuf {
         PathBuf::from_iter([&self.directory, &self.file_hash])
             .with_extension(self.extension)
     }
 
+    #[must_use]
     pub fn filename(&self) -> String {
         format!("{}.{}", self.file_hash, self.extension)
     }

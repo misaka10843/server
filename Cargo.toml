@@ -95,6 +95,7 @@ async-trait = { version = "0.1" }
 axum.workspace = true
 axum-extra = { version = "0.10.1", features = [ "query" ] }
 axum-login.workspace = true
+axum-test = "17.3.0"
 axum_typed_multipart = "0.16"
 base64 = "0.22"
 bon = { version = "3.0", features = [
@@ -138,6 +139,7 @@ maud = { version = "0.27.0", features = [
     "axum",
 ] }
 nestify = "0.3.3"
+postgresql_embedded = { version = "0.19.0", features = [ "bundled", "tokio" ] }
 pulldown-cmark = { version = "0.13.0", default-features = false, features = [
     "html",
     "simd",
@@ -187,8 +189,6 @@ xxhash-rust = { version = "0.8", features = [
     "xxh3",
 ] }
 zxcvbn = "3.1"
-axum-test = "17.3.0"
-postgresql_embedded = { version = "0.19.0", features = ["bundled", "tokio"] }
 
 [dev-dependencies]
 anyhow = "1.0.98"

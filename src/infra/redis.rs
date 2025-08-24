@@ -22,6 +22,7 @@ impl Pool {
         self.inner.quit().await
     }
 
+    #[must_use]
     pub fn pool(&self) -> RedisPool {
         self.inner.clone()
     }

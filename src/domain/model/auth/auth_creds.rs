@@ -46,6 +46,7 @@ pub enum AuthnError {
 }
 
 impl AuthnError {
+    #[must_use]
     pub fn authentication_failed() -> Self {
         Self::AuthenticationFailed {
             backtrace: Backtrace::capture(),
