@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use anyhow::{Context, Result};
 use postgresql_embedded::{PostgreSQL, Settings};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
@@ -48,6 +50,14 @@ impl TestDatabase {
             .stop()
             .await
             .context("PostgreSQL instance stopped successfully")
+    }
+}
+
+impl Drop for TestDatabase {
+    fn drop(&mut self) {
+        let settings = self.postgres.settings();
+        let _ = std::fs::remove_dir_all(&settings.data_dir);
+        let _ = settings.password_file.parent().map(std::fs::remove_dir_all);
     }
 }
 
