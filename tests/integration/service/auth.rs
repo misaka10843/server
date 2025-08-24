@@ -1,3 +1,6 @@
+use std::panic::catch_unwind;
+
+use anyhow::bail;
 use itertools::assert_equal;
 use sea_query::Iden;
 use serde_json::{from_value, json};
@@ -26,6 +29,7 @@ async fn test_user_sign_up() -> anyhow::Result<()> {
     assert_eq!(user.name, "testuser");
     Ok(())
 }
+
 #[tokio::test]
 async fn test_user_sign_in() -> anyhow::Result<()> {
     let db = TestDatabase::new().await?;
@@ -86,9 +90,17 @@ async fn test_user_sign_in_invalid_credentials() -> anyhow::Result<()> {
         "password": "wrongpassword"
     }))?;
     let result = service.sign_in(creds).await;
-    assert!(matches!(
+
+    let eq = matches!(
         result,
         Err(SignInError::Authn(AuthnError::AuthenticationFailed { .. }))
-    ));
-    Ok(())
+    );
+
+    if eq {
+        Ok(())
+    } else {
+        bail!(
+            "Result: {result:#?} should match Err(SignInError::Authn(AuthnError::AuthenticationFailed {{ .. }}))"
+        )
+    }
 }
