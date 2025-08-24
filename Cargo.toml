@@ -93,7 +93,9 @@ argon2.features = [
 argon2.workspace = true
 async-trait = { version = "0.1" }
 axum.workspace = true
-axum-extra = { version = "0.10.1", features = [ "query" ] }
+axum-extra = { version = "0.10.1", features = [
+    "query",
+] }
 axum-login.workspace = true
 axum-test = "17.3.0"
 axum_typed_multipart = "0.16"
@@ -139,7 +141,10 @@ maud = { version = "0.27.0", features = [
     "axum",
 ] }
 nestify = "0.3.3"
-postgresql_embedded = { version = "0.19.0", features = [ "bundled", "tokio" ] }
+postgresql_embedded = { version = "0.19.0", features = [
+    "bundled",
+    "tokio",
+] }
 pulldown-cmark = { version = "0.13.0", default-features = false, features = [
     "html",
     "simd",
@@ -204,14 +209,14 @@ rusty-hook = "=0.11.2"
 debug     = 0
 opt-level = 1
 strip     = "debuginfo"
+# If you get incremental compilation ICE, disable it
+# incremental     = false
 
 [profile.dev_debug]
 debug     = 2
 inherits  = "dev"
 opt-level = 0
 strip     = "none"
-# If you get incremental compilation ICE, disable it
-# incremental     = false
 
 [profile.dev.build-override]
 opt-level = 3
