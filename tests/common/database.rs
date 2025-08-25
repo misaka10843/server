@@ -1,11 +1,31 @@
-use std::path::PathBuf;
+use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use anyhow::{Context, Result};
+use futures_util::FutureExt;
 use postgresql_embedded::{PostgreSQL, Settings};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use sea_orm_migration::MigratorTrait;
 use thcdb_rs::infra::database::sea_orm::enum_table::sync_enum_table;
 const DB_NAME: &str = "thc_test";
+
+pub async fn with_test_db<F, Fut>(f: F) -> anyhow::Result<()>
+where
+    F: FnOnce(DatabaseConnection) -> Fut + Send + 'static,
+    Fut: std::future::Future<Output = anyhow::Result<()>> + Send,
+{
+    let db = TestDatabase::new().await?;
+
+    let result = AssertUnwindSafe(f(db.connection.clone()))
+        .catch_unwind()
+        .await;
+
+    db.stop().await?;
+
+    match result {
+        Ok(inner) => inner,
+        Err(panic) => std::panic::resume_unwind(panic),
+    }
+}
 
 pub struct TestDatabase {
     postgres: PostgreSQL,
