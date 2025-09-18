@@ -16,6 +16,7 @@ use crate::application::correction::NewCorrectionDto;
 use crate::application::event::{self, CreateError};
 use crate::domain::event::NewEvent;
 use crate::domain::event::model::Event;
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
 use crate::presentation::error::ApiError;
@@ -28,11 +29,13 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(upsert_correction))
         .routes(routes!(find_event_by_id))
         .routes(routes!(find_event_by_keyword))
+        .routes(routes!(find_events_by_time))
 }
 
 super::data! {
     DataOptionEvent, Option<Event>
     DataVecEvent, Vec<Event>
+    DataTimePaginatedEvent, TimePaginated<Event>
 }
 
 #[utoipa::path(
@@ -116,4 +119,21 @@ async fn upsert_correction(
     service.upsert_correction(id, dto.with_author(user)).await?;
 
     Ok(Message::ok())
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/event/recent",
+    params(TimeCursor),
+    responses(
+        (status = 200, body = DataTimePaginatedEvent),
+        Error
+    ),
+)]
+async fn find_events_by_time(
+    State(service): State<event::Service<state::SeaOrmRepository>>,
+    Query(cursor): Query<TimeCursor>,
+) -> Result<Data<TimePaginated<Event>>, Error> {
+    service.find_by_time(cursor).await.bimap_into()
 }

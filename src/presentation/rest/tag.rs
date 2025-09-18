@@ -14,6 +14,7 @@ use crate::application::correction::NewCorrectionDto;
 use crate::application::tag::{CreateError, UpsertCorrectionError};
 use crate::domain::tag::NewTag;
 use crate::domain::tag::model::Tag;
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{
     Data, {self},
@@ -27,11 +28,13 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(upsert_tag_correction))
         .routes(routes!(find_tag_by_id))
         .routes(routes!(find_tag_by_keyword))
+        .routes(routes!(find_tags_by_time))
 }
 
 super::data! {
     DataOptionTag, Option<Tag>
     DataVecTag, Vec<Tag>
+    DataTimePaginatedTag, TimePaginated<Tag>
 }
 
 #[utoipa::path(
@@ -117,4 +120,21 @@ async fn upsert_tag_correction(
         .await?;
 
     Ok(api_response::Message::ok())
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/tag/recent",
+    params(TimeCursor),
+    responses(
+        (status = 200, body = DataTimePaginatedTag),
+        Error
+    ),
+)]
+async fn find_tags_by_time(
+    State(service): State<state::TagService>,
+    Query(cursor): Query<TimeCursor>,
+) -> Result<Data<TimePaginated<Tag>>, Error> {
+    service.find_by_time(cursor).await.bimap_into()
 }

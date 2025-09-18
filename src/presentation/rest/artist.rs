@@ -30,6 +30,7 @@ use crate::domain::artist_release::{
 };
 use crate::domain::release::model::Release;
 use crate::domain::repository::{Cursor, Paginated};
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, IntoApiResponse, Message};
 
@@ -46,6 +47,7 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(find_artist_discographies_by_type))
         .routes(routes!(find_artist_apperances))
         .routes(routes!(get_artist_credits))
+        .routes(routes!(find_artists_by_time))
 }
 
 data!(
@@ -55,6 +57,7 @@ data!(
     DataPaginatedDiscography, Paginated<Discography>
     DataPaginatedAppearance, Paginated<Appearance>
     DataPaginatedCredit, Paginated<Credit>
+    DataTimePaginatedArtist, TimePaginated<Artist>
 );
 
 #[utoipa::path(
@@ -422,4 +425,24 @@ async fn find_artist_discographies_init(
         demo,
         other,
     }))
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/artist/recent",
+    params(TimeCursor, CommonFilter),
+    responses(
+        (status = 200, body = DataTimePaginatedArtist),
+        Error
+    ),
+)]
+async fn find_artists_by_time(
+    State(repo): State<state::SeaOrmRepository>,
+    Query(cursor): Query<TimeCursor>,
+    Query(common): Query<CommonFilter>,
+) -> Result<Data<TimePaginated<Artist>>, Error> {
+    domain::artist::repo::Repo::find_by_time(&repo, cursor, common)
+        .await
+        .bimap_into()
 }

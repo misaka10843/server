@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use entity::enums::EntityType;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -18,6 +19,7 @@ pub struct Event {
     pub start_date: Option<DateWithPrecision>,
     pub end_date: Option<DateWithPrecision>,
     pub alternative_names: Vec<AlternativeName>,
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]

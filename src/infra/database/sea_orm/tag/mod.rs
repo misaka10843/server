@@ -1,6 +1,7 @@
+use entity::enums::{CorrectionStatus, EntityType};
 use entity::tag::Column::Name;
 use entity::{
-    tag, tag_alternative_name, tag_alternative_name_history, tag_history,
+    correction, tag, tag_alternative_name, tag_alternative_name_history, tag_history,
     tag_relation, tag_relation_history,
 };
 use itertools::izip;
@@ -8,12 +9,14 @@ use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
     EntityTrait, IntoActiveValue, LoaderTrait, QueryFilter, QueryOrder,
+    QuerySelect,
 };
 use sea_query::extension::postgres::PgBinOper::*;
 use sea_query::{ExprTrait, Func};
 use snafu::ResultExt;
 
 use crate::domain::repository::Connection;
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::domain::tag::model::{
     AlternativeName, NewTag, NewTagRelation, Tag, TagRelation,
 };
@@ -55,6 +58,13 @@ where
             );
         find_many_impl(select, self.conn()).await.boxed()
     }
+
+    async fn find_by_time(
+        &self,
+        cursor: TimeCursor,
+    ) -> Result<TimePaginated<Tag>, Box<dyn std::error::Error + Send + Sync>> {
+        find_by_time_impl(cursor, EntityType::Tag, self.conn()).await.boxed()
+    }
 }
 
 async fn find_many_impl(
@@ -94,8 +104,71 @@ async fn find_many_impl(
                     r#type: r.r#type,
                 })
                 .collect(),
+            created_at: chrono::Utc::now(), // This will be updated by find_by_time_impl
         })
         .collect())
+}
+
+async fn find_by_time_impl(
+    cursor: TimeCursor,
+    entity_type: EntityType,
+    db: &impl ConnectionTrait,
+) -> Result<TimePaginated<Tag>, DbErr> {
+    use std::collections::HashMap;
+
+    // Query corrections to find entity creation times, ordered by newest first
+    let mut correction_query = correction::Entity::find()
+        .filter(correction::Column::EntityType.eq(entity_type))
+        .filter(correction::Column::Status.eq(CorrectionStatus::Approved))
+        .order_by_desc(correction::Column::CreatedAt)
+        .limit(u64::from(cursor.limit));
+
+    // Apply cursor filter if provided
+    if let Some(after) = cursor.after {
+        correction_query = correction_query.filter(correction::Column::CreatedAt.lt(after));
+    }
+
+    let corrections = correction_query.all(db).await?;
+    
+    if corrections.is_empty() {
+        return Ok(TimePaginated {
+            items: vec![],
+            next_cursor: None,
+        });
+    }
+
+    // Extract entity IDs and their creation times
+    let entity_ids: Vec<i32> = corrections.iter().map(|c| c.entity_id).collect();
+    let entity_times: HashMap<i32, chrono::DateTime<chrono::FixedOffset>> = corrections
+        .iter()
+        .map(|c| (c.entity_id, c.created_at))
+        .collect();
+
+    // Query tags by the entity IDs we found
+    let select = tag::Entity::find().filter(tag::Column::Id.is_in(entity_ids.clone()));
+    let mut tags = find_many_impl(select, db).await?;
+
+    // Update the created_at fields with the correction timestamps and sort by creation time
+    for tag in &mut tags {
+        if let Some(&created_at) = entity_times.get(&tag.id) {
+            tag.created_at = created_at.to_utc();
+        }
+    }
+
+    // Sort tags by creation time (newest first) to match the correction order
+    tags.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+
+    // Get next cursor from last item if we have results and hit the limit
+    let next_cursor = if tags.len() == usize::from(cursor.limit) {
+        tags.last().map(|tag| tag.created_at)
+    } else {
+        None
+    };
+
+    Ok(TimePaginated {
+        items: tags,
+        next_cursor,
+    })
 }
 
 impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {

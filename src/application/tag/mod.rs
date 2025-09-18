@@ -5,6 +5,7 @@ use crate::domain::correction::{
     NewCorrection, NewCorrectionMeta, {self},
 };
 use crate::domain::repository::TransactionManager;
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::domain::tag::Tag;
 use crate::domain::tag::model::NewTag;
 use crate::domain::tag::repo::{Repo, TxRepo};
@@ -77,6 +78,10 @@ where
             .find_by_keyword(keyword)
             .await
             .map_err(Error::from)
+    }
+
+    pub async fn find_by_time(&self, cursor: TimeCursor) -> Result<TimePaginated<Tag>, Error> {
+        self.repo.find_by_time(cursor).await.map_err(Error::from)
     }
 }
 

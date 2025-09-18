@@ -5,6 +5,7 @@ use crate::domain::correction::{self, NewCorrection, NewCorrectionMeta};
 use crate::domain::event;
 use crate::domain::event::NewEvent;
 use crate::domain::repository::TransactionManager;
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::infra;
 use crate::infra::error::Error;
 
@@ -68,6 +69,10 @@ where
         keyword: &str,
     ) -> Result<Vec<event::Event>, Error> {
         Ok(event::Repo::find_by_keyword(&self.repo, keyword).await?)
+    }
+
+    pub async fn find_by_time(&self, cursor: TimeCursor) -> Result<TimePaginated<event::Event>, Error> {
+        Ok(event::Repo::find_by_time(&self.repo, cursor).await?)
     }
 }
 

@@ -1,16 +1,17 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+use entity::enums::{CorrectionStatus, EntityType};
 use entity::sea_orm_active_enums::ArtistImageType;
 use entity::{
     artist, artist_alias, artist_image, artist_link, artist_localized_name,
     artist_membership, artist_membership_role, artist_membership_tenure,
-    credit_role, image, language,
+    correction, credit_role, image, language,
 };
 use itertools::{Itertools, izip};
 use sea_orm::{
     ColumnTrait, Condition, ConnectionTrait, DbErr, EntityTrait,
-    FromQueryResult, LoaderTrait, QueryFilter, QueryOrder, Select,
+    FromQueryResult, LoaderTrait, QueryFilter, QueryOrder, QuerySelect, Select,
 };
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{Cond, ExprTrait, Func, SimpleExpr};
@@ -22,6 +23,7 @@ use crate::domain::artist::repo::{CommonFilter, FindManyFilter, Repo, TxRepo};
 use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::repository::Connection;
 use crate::domain::shared::model::{LocalizedName, Location};
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 
 mod impls;
 
@@ -66,6 +68,14 @@ where
             );
 
         find_many_impl(select, self.conn()).await.boxed()
+    }
+
+    async fn find_by_time(
+        &self,
+        cursor: TimeCursor,
+        common: CommonFilter,
+    ) -> Result<TimePaginated<Artist>, Box<dyn std::error::Error + Send + Sync>> {
+        find_by_time_impl(cursor, common, EntityType::Artist, self.conn()).await.boxed()
     }
 }
 
@@ -277,11 +287,75 @@ async fn find_many_impl(
                 },
                 memberships,
                 profile_image_url,
+                created_at: chrono::Utc::now(), // This will be updated by find_by_time_impl
             }
         })
         .collect_vec();
 
     Ok(ret)
+}
+
+async fn find_by_time_impl(
+    cursor: TimeCursor,
+    common: CommonFilter,
+    entity_type: EntityType,
+    db: &impl ConnectionTrait,
+) -> Result<TimePaginated<Artist>, DbErr> {
+    // Query corrections to find entity creation times, ordered by newest first
+    let mut correction_query = correction::Entity::find()
+        .filter(correction::Column::EntityType.eq(entity_type))
+        .filter(correction::Column::Status.eq(CorrectionStatus::Approved))
+        .order_by_desc(correction::Column::CreatedAt)
+        .limit(u64::from(cursor.limit));
+
+    // Apply cursor filter if provided
+    if let Some(after) = cursor.after {
+        correction_query = correction_query.filter(correction::Column::CreatedAt.lt(after));
+    }
+
+    let corrections = correction_query.all(db).await?;
+    
+    if corrections.is_empty() {
+        return Ok(TimePaginated {
+            items: vec![],
+            next_cursor: None,
+        });
+    }
+
+    // Extract entity IDs and their creation times
+    let entity_ids: Vec<i32> = corrections.iter().map(|c| c.entity_id).collect();
+    let entity_times: HashMap<i32, chrono::DateTime<chrono::FixedOffset>> = corrections
+        .iter()
+        .map(|c| (c.entity_id, c.created_at))
+        .collect();
+
+    // Query artists by the entity IDs we found, applying common filter
+    let select = artist::Entity::find()
+        .filter(artist::Column::Id.is_in(entity_ids.clone()))
+        .filter(SimpleExpr::from(common));
+    let mut artists = find_many_impl(select, db).await?;
+
+    // Update the created_at fields with the correction timestamps and sort by creation time
+    for artist in &mut artists {
+        if let Some(&created_at) = entity_times.get(&artist.id) {
+            artist.created_at = created_at.to_utc();
+        }
+    }
+
+    // Sort artists by creation time (newest first) to match the correction order
+    artists.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+
+    // Get next cursor from last item if we have results and hit the limit
+    let next_cursor = if artists.len() == usize::from(cursor.limit) {
+        artists.last().map(|artist| artist.created_at)
+    } else {
+        None
+    };
+
+    Ok(TimePaginated {
+        items: artists,
+        next_cursor,
+    })
 }
 
 impl TxRepo for SeaOrmTxRepo {
