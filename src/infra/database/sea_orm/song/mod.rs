@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use entity::enums::StorageBackend;
 use entity::sea_orm_active_enums::ReleaseImageType;
-use entity::song::Column::{Id, Title};
+use entity::song::Column::{CreatedAt, Id, Title};
 use entity::{
     artist, image, release_image, song, song_artist, song_artist_history,
     song_credit, song_credit_history, song_history, song_language,
@@ -29,6 +29,7 @@ use crate::domain::image::Image;
 use crate::domain::release::model::SimpleRelease;
 use crate::domain::repository::Connection;
 use crate::domain::shared::model::{Language, NewLocalizedName};
+use crate::domain::shared::repository::pagination::{TimeCursor, TimePaginated};
 use crate::domain::song::model::{
     LocalizedTitle, NewSong, NewSongCredit, Song, SongCredit,
 };
@@ -69,6 +70,34 @@ where
                     .binary(SimilarityDistance, search_term),
             );
         find_many_impl(select, self.conn()).await.boxed()
+    }
+
+    async fn find_by_time(
+        &self,
+        cursor: TimeCursor,
+    ) -> Result<TimePaginated<Song>, Box<dyn std::error::Error + Send + Sync>> {
+        let mut select = song::Entity::find()
+            .order_by_desc(CreatedAt)
+            .limit(u64::from(cursor.limit));
+
+        // Apply cursor filter if provided
+        if let Some(after) = cursor.after {
+            select = select.filter(CreatedAt.lt(after));
+        }
+
+        let songs = find_many_impl(select, self.conn()).await?;
+        
+        // Get next cursor from last item if we have results and hit the limit
+        let next_cursor = if songs.len() == usize::from(cursor.limit) {
+            songs.last().map(|song| song.created_at)
+        } else {
+            None
+        };
+
+        Ok(TimePaginated {
+            items: songs,
+            next_cursor,
+        })
     }
 }
 
@@ -188,6 +217,7 @@ async fn find_many_impl(
                 localized_titles,
                 releases,
                 lyrics,
+                created_at: s_model.created_at.to_utc(),
             }
         },
     )
