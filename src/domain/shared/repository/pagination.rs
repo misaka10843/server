@@ -1,7 +1,7 @@
 #![expect(clippy::option_if_let_else)]
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
+use utoipa::{IntoParams, ToSchema};
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct Paginated<T> {
@@ -54,7 +54,7 @@ pub struct Cursor {
     pub limit: u8,
 }
 
-#[derive(Clone, Copy, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Copy, Deserialize, Serialize, ToSchema, IntoParams)]
 pub struct TimeCursor {
     /// Optional timestamp cursor for pagination (RFC 3339 format)
     pub after: Option<DateTime<Utc>>,

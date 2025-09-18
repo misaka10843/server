@@ -18,6 +18,7 @@ use crate::application::release::{CreateError, UpsertCorrectionError};
 use crate::application::release_image::ReleaseCoverArtInput;
 use crate::domain::release::repo::Filter;
 use crate::domain::release::{NewRelease, Release};
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
 
@@ -32,11 +33,13 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(find_release_by_keyword))
         .routes(routes!(find_release_by_id))
         .routes(routes!(upload_release_cover_art))
+        .routes(routes!(find_releases_by_time))
 }
 
 super::data! {
     DataOptionRelease, Option<Release>
     DataVecRelease, Vec<Release>
+    DataTimePaginatedRelease, TimePaginated<Release>
 }
 
 #[utoipa::path(
@@ -182,4 +185,21 @@ async fn upload_release_cover_art(
     };
     service.upload_cover_art(dto).await?;
     Ok(Message::ok())
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/release/recent",
+    params(TimeCursor),
+    responses(
+        (status = 200, body = DataTimePaginatedRelease),
+        Error
+    )
+)]
+async fn find_releases_by_time(
+    State(service): State<Service>,
+    Query(cursor): Query<TimeCursor>,
+) -> Result<Data<TimePaginated<Release>>, Error> {
+    service.find_by_time(cursor).await.bimap_into()
 }
