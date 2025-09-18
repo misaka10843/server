@@ -64,6 +64,7 @@ pub(super) fn conv_to_domain_model(
             .clone()
             .map(domain::image::Image::from)
             .map(|image| image.url()),
+        created_at: chrono::Utc::now(), // This will be updated by find_by_time_impl
     }
 }
 

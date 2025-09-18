@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 
-use entity::enums::StorageBackend;
+use chrono::Utc;
+use entity::enums::{CorrectionStatus, EntityType, StorageBackend};
 use entity::sea_orm_active_enums::ReleaseImageType;
 use entity::song::Column::{Id, Title};
 use entity::{
-    artist, image, release_image, song, song_artist, song_artist_history,
+    artist, correction, image, release_image, song, song_artist, song_artist_history,
     song_credit, song_credit_history, song_history, song_language,
     song_language_history, song_localized_title, song_localized_title_history,
     song_lyrics,
@@ -29,6 +30,7 @@ use crate::domain::image::Image;
 use crate::domain::release::model::SimpleRelease;
 use crate::domain::repository::Connection;
 use crate::domain::shared::model::{Language, NewLocalizedName};
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::domain::song::model::{
     LocalizedTitle, NewSong, NewSongCredit, Song, SongCredit,
 };
@@ -69,6 +71,13 @@ where
                     .binary(SimilarityDistance, search_term),
             );
         find_many_impl(select, self.conn()).await.boxed()
+    }
+
+    async fn find_by_time(
+        &self,
+        cursor: TimeCursor,
+    ) -> Result<TimePaginated<Song>, Box<dyn std::error::Error + Send + Sync>> {
+        find_by_time_impl(cursor, EntityType::Song, self.conn()).await.boxed()
     }
 }
 
@@ -188,10 +197,71 @@ async fn find_many_impl(
                 localized_titles,
                 releases,
                 lyrics,
+                created_at: chrono::Utc::now(), // This will be updated in find_by_time_impl
             }
         },
     )
     .collect())
+}
+
+async fn find_by_time_impl(
+    cursor: TimeCursor,
+    entity_type: EntityType,
+    db: &impl ConnectionTrait,
+) -> Result<TimePaginated<Song>, DbErr> {
+    // Query corrections to find entity creation times, ordered by newest first
+    let mut correction_query = correction::Entity::find()
+        .filter(correction::Column::EntityType.eq(entity_type))
+        .filter(correction::Column::Status.eq(CorrectionStatus::Approved))
+        .order_by_desc(correction::Column::CreatedAt)
+        .limit(u64::from(cursor.limit));
+
+    // Apply cursor filter if provided
+    if let Some(after) = cursor.after {
+        correction_query = correction_query.filter(correction::Column::CreatedAt.lt(after));
+    }
+
+    let corrections = correction_query.all(db).await?;
+    
+    if corrections.is_empty() {
+        return Ok(TimePaginated {
+            items: vec![],
+            next_cursor: None,
+        });
+    }
+
+    // Extract entity IDs and their creation times
+    let entity_ids: Vec<i32> = corrections.iter().map(|c| c.entity_id).collect();
+    let entity_times: HashMap<i32, chrono::DateTime<chrono::FixedOffset>> = corrections
+        .iter()
+        .map(|c| (c.entity_id, c.created_at))
+        .collect();
+
+    // Query songs by the entity IDs we found
+    let select = song::Entity::find().filter(Id.is_in(entity_ids.clone()));
+    let mut songs = find_many_impl(select, db).await?;
+
+    // Update the created_at fields with the correction timestamps and sort by creation time
+    for song in &mut songs {
+        if let Some(&created_at) = entity_times.get(&song.id) {
+            song.created_at = created_at.to_utc();
+        }
+    }
+
+    // Sort songs by creation time (newest first) to match the correction order
+    songs.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+
+    // Get next cursor from last item if we have results and hit the limit
+    let next_cursor = if songs.len() == usize::from(cursor.limit) {
+        songs.last().map(|song| song.created_at)
+    } else {
+        None
+    };
+
+    Ok(TimePaginated {
+        items: songs,
+        next_cursor,
+    })
 }
 
 async fn load_credit_roles(

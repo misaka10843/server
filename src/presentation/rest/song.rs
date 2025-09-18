@@ -12,6 +12,7 @@ use super::state::{
 };
 use crate::application::correction::NewCorrectionDto;
 use crate::application::song::{CreateError, UpsertCorrectionError};
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::domain::song::model::{NewSong, Song};
 use crate::infra::error::Error;
 use crate::presentation::api_response::{Data, Message};
@@ -24,11 +25,13 @@ pub fn router() -> OpenApiRouter<ArcAppState> {
         .routes(routes!(update_song))
         .routes(routes!(find_song_by_id))
         .routes(routes!(find_song_by_keyword))
+        .routes(routes!(find_songs_by_time))
 }
 
 super::data! {
     DataOptionSong, Option<Song>
     DataVecSong, Vec<Song>
+    DataTimePaginatedSong, TimePaginated<Song>
 }
 
 #[utoipa::path(
@@ -67,6 +70,23 @@ async fn find_song_by_keyword(
     Query(query): Query<KwQuery>,
 ) -> Result<Data<Vec<Song>>, Error> {
     service.find_by_keyword(&query.keyword).await.bimap_into()
+}
+
+#[utoipa::path(
+    get,
+    tag = TAG,
+    path = "/song/recent",
+    params(TimeCursor),
+    responses(
+		(status = 200, body = DataTimePaginatedSong),
+		Error
+    ),
+)]
+async fn find_songs_by_time(
+    State(service): State<state::SongService>,
+    Query(cursor): Query<TimeCursor>,
+) -> Result<Data<TimePaginated<Song>>, Error> {
+    service.find_by_time(cursor).await.bimap_into()
 }
 
 #[utoipa::path(

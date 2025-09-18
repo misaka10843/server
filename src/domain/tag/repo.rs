@@ -1,5 +1,6 @@
 use super::model::{NewTag, Tag};
 use crate::domain::repository::{Connection, Transaction};
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 
 pub trait Repo: Connection {
     async fn find_by_id(
@@ -11,6 +12,12 @@ pub trait Repo: Connection {
         &self,
         keyword: &str,
     ) -> Result<Vec<Tag>, Box<dyn std::error::Error + Send + Sync>>;
+
+    /// Get tags ordered by creation time (newest first) with cursor pagination
+    async fn find_by_time(
+        &self,
+        cursor: TimeCursor,
+    ) -> Result<TimePaginated<Tag>, Box<dyn std::error::Error + Send + Sync>>;
 }
 
 pub trait TxRepo: Repo + Transaction
