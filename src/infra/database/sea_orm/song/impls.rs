@@ -31,6 +31,8 @@ pub async fn apply_update(
     let active_model = song::ActiveModel {
         id: Set(correction.entity_id),
         title: Set(history.title),
+        created_at: NotSet,
+        updated_at: NotSet,
     };
 
     active_model.update(tx).await?;

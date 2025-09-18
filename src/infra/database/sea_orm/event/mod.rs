@@ -153,6 +153,8 @@ async fn create_event_and_relations(
             .end_date
             .map(|d| d.precision)
             .into_active_value(),
+        created_at: NotSet,
+        updated_at: NotSet,
     };
 
     let event = event_model.insert(tx).await?;
@@ -283,6 +285,8 @@ async fn apply_correction(
         start_date_precision: Set(history.start_date_precision),
         end_date: Set(history.end_date),
         end_date_precision: Set(history.end_date_precision),
+        created_at: NotSet,
+        updated_at: NotSet,
     };
 
     active_model.update(tx).await?;

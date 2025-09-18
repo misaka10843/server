@@ -345,6 +345,8 @@ async fn create_song_and_relations(
     let song_model = song::ActiveModel {
         id: NotSet,
         title: data.title.to_string().into_active_value(),
+        created_at: NotSet,
+        updated_at: NotSet,
     };
 
     let song = song_model.insert(tx).await?;

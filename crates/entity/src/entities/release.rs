@@ -21,6 +21,8 @@ pub struct Model {
     pub recording_date_start_precision: DatePrecision,
     pub recording_date_end: Option<Date>,
     pub recording_date_end_precision: DatePrecision,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

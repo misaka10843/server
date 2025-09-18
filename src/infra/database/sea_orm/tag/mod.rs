@@ -144,6 +144,8 @@ async fn create_tag_impl(
             .clone()
             .unwrap_or_default()
             .into_active_value(),
+        created_at: NotSet,
+        updated_at: NotSet,
     };
 
     let tag = tag_model.insert(tx).await?;

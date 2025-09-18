@@ -22,6 +22,8 @@ pub struct Model {
     pub start_date_precision: DatePrecision,
     pub end_date: Option<Date>,
     pub end_date_precision: DatePrecision,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
