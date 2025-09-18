@@ -1,5 +1,5 @@
 use crate::domain::repository::{Connection, Transaction};
-use crate::domain::shared::repository::pagination::{TimeCursor, TimePaginated};
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 
 pub enum Filter {
     Id(i32),

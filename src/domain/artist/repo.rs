@@ -4,7 +4,7 @@ use utoipa::{IntoParams, ToSchema};
 
 use super::model::{Artist, ArtistType, NewArtist};
 use crate::domain::repository::Transaction;
-use crate::domain::shared::repository::pagination::{TimeCursor, TimePaginated};
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 
 #[derive(Clone, Debug, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]

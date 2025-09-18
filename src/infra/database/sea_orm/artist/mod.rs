@@ -10,7 +10,7 @@ use entity::{
 use itertools::{Itertools, izip};
 use sea_orm::{
     ColumnTrait, Condition, ConnectionTrait, DbErr, EntityTrait,
-    FromQueryResult, LoaderTrait, QueryFilter, QueryOrder, Select,
+    FromQueryResult, LoaderTrait, QueryFilter, QueryOrder, QuerySelect, Select,
 };
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{Cond, ExprTrait, Func, SimpleExpr};
@@ -22,6 +22,7 @@ use crate::domain::artist::repo::{CommonFilter, FindManyFilter, Repo, TxRepo};
 use crate::domain::credit_role::CreditRoleRef;
 use crate::domain::repository::Connection;
 use crate::domain::shared::model::{LocalizedName, Location};
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 
 mod impls;
 
@@ -66,6 +67,36 @@ where
             );
 
         find_many_impl(select, self.conn()).await.boxed()
+    }
+
+    async fn find_by_time(
+        &self,
+        cursor: TimeCursor,
+        common: CommonFilter,
+    ) -> Result<TimePaginated<Artist>, Box<dyn std::error::Error + Send + Sync>> {
+        let mut select = artist::Entity::find()
+            .filter(SimpleExpr::from(common))
+            .order_by_desc(artist::Column::CreatedAt)
+            .limit(u64::from(cursor.limit));
+
+        // Apply cursor filter if provided
+        if let Some(after) = cursor.after {
+            select = select.filter(artist::Column::CreatedAt.lt(after));
+        }
+
+        let artists = find_many_impl(select, self.conn()).await?;
+        
+        // Get next cursor from last item if we have results and hit the limit
+        let next_cursor = if artists.len() == usize::from(cursor.limit) {
+            artists.last().map(|artist| artist.created_at)
+        } else {
+            None
+        };
+
+        Ok(TimePaginated {
+            items: artists,
+            next_cursor,
+        })
     }
 }
 
@@ -277,6 +308,7 @@ async fn find_many_impl(
                 },
                 memberships,
                 profile_image_url,
+                created_at: artist.created_at.to_utc(),
             }
         })
         .collect_vec();

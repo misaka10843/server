@@ -29,7 +29,7 @@ use crate::domain::image::Image;
 use crate::domain::release::model::SimpleRelease;
 use crate::domain::repository::Connection;
 use crate::domain::shared::model::{Language, NewLocalizedName};
-use crate::domain::shared::repository::pagination::{TimeCursor, TimePaginated};
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::domain::song::model::{
     LocalizedTitle, NewSong, NewSongCredit, Song, SongCredit,
 };

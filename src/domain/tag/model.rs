@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use entity::enums::EntityType;
 use entity::sea_orm_active_enums::TagType;
 use serde::{Deserialize, Serialize};
@@ -15,6 +16,7 @@ pub struct Tag {
     pub description: Option<String>,
     pub alt_names: Vec<AlternativeName>,
     pub relations: Vec<TagRelation>,
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Clone, Debug, Serialize, ToSchema)]

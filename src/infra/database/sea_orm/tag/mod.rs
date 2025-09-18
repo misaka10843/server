@@ -8,12 +8,14 @@ use sea_orm::ActiveValue::{NotSet, Set};
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
     EntityTrait, IntoActiveValue, LoaderTrait, QueryFilter, QueryOrder,
+    QuerySelect,
 };
 use sea_query::extension::postgres::PgBinOper::*;
 use sea_query::{ExprTrait, Func};
 use snafu::ResultExt;
 
 use crate::domain::repository::Connection;
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::domain::tag::model::{
     AlternativeName, NewTag, NewTagRelation, Tag, TagRelation,
 };
@@ -55,6 +57,34 @@ where
             );
         find_many_impl(select, self.conn()).await.boxed()
     }
+
+    async fn find_by_time(
+        &self,
+        cursor: TimeCursor,
+    ) -> Result<TimePaginated<Tag>, Box<dyn std::error::Error + Send + Sync>> {
+        let mut select = tag::Entity::find()
+            .order_by_desc(tag::Column::CreatedAt)
+            .limit(u64::from(cursor.limit));
+
+        // Apply cursor filter if provided
+        if let Some(after) = cursor.after {
+            select = select.filter(tag::Column::CreatedAt.lt(after));
+        }
+
+        let tags = find_many_impl(select, self.conn()).await?;
+        
+        // Get next cursor from last item if we have results and hit the limit
+        let next_cursor = if tags.len() == usize::from(cursor.limit) {
+            tags.last().map(|tag| tag.created_at)
+        } else {
+            None
+        };
+
+        Ok(TimePaginated {
+            items: tags,
+            next_cursor,
+        })
+    }
 }
 
 async fn find_many_impl(
@@ -94,6 +124,7 @@ async fn find_many_impl(
                     r#type: r.r#type,
                 })
                 .collect(),
+            created_at: tag.created_at.to_utc(),
         })
         .collect())
 }

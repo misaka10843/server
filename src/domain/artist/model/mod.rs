@@ -1,4 +1,5 @@
 pub use entity::sea_orm_active_enums::ArtistType;
+use chrono::{DateTime, Utc};
 use macros::AutoMapper;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -46,6 +47,7 @@ pub struct Artist {
 
     /// Groups list for individuals, member list for groups,
     pub memberships: Vec<Membership>,
+    pub created_at: DateTime<Utc>,
 }
 
 #[serde_with::apply(

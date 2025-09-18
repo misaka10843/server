@@ -1,6 +1,6 @@
 use super::model::{NewSong, Song};
 use crate::domain::repository::{Connection, Transaction};
-use crate::domain::shared::repository::pagination::{TimeCursor, TimePaginated};
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 
 pub trait Repo: Connection {
     async fn find_by_id(

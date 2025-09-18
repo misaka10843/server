@@ -5,6 +5,7 @@ use crate::domain::correction::{
     NewCorrection, NewCorrectionMeta, {self},
 };
 use crate::domain::repository::TransactionManager;
+use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::domain::song::model::{NewSong, Song};
 use crate::domain::song::repo::{Repo, TxRepo};
 use crate::infra::error::Error;
@@ -64,6 +65,10 @@ where
 
     pub async fn find_by_keyword(&self, kw: &str) -> Result<Vec<Song>, Error> {
         Ok(self.repo.find_by_keyword(kw).await?)
+    }
+
+    pub async fn find_by_time(&self, cursor: TimeCursor) -> Result<TimePaginated<Song>, Error> {
+        Ok(self.repo.find_by_time(cursor).await?)
     }
 }
 
