@@ -4,7 +4,6 @@ use utoipa::{IntoParams, ToSchema};
 
 use super::model::{Artist, ArtistType, NewArtist};
 use crate::domain::repository::Transaction;
-use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 
 #[derive(Clone, Debug, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
@@ -46,13 +45,6 @@ pub trait Repo {
         filter: FindManyFilter,
         common: CommonFilter,
     ) -> Result<Vec<Artist>, Box<dyn std::error::Error + Send + Sync>>;
-
-    /// Get artists ordered by creation time (newest first) with cursor pagination
-    async fn find_by_time(
-        &self,
-        cursor: TimeCursor,
-        common: CommonFilter,
-    ) -> Result<TimePaginated<Artist>, Box<dyn std::error::Error + Send + Sync>>;
 }
 
 pub trait TxRepo: Repo + Transaction

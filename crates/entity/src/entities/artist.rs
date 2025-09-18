@@ -32,8 +32,6 @@ pub struct Model {
     pub start_location_province: Option<String>,
     #[sea_orm(column_type = "Text", nullable)]
     pub start_location_city: Option<String>,
-    pub created_at: DateTimeWithTimeZone,
-    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

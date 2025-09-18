@@ -1,5 +1,5 @@
 use entity::{release, release_history};
-use sea_orm::ActiveValue::{NotSet, Set};
+use sea_orm::ActiveValue::Set;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, DbErr, EntityTrait, QueryFilter, QueryOrder,
 };
@@ -127,8 +127,6 @@ impl TxRepo for crate::infra::database::sea_orm::SeaOrmTxRepo {
             recording_date_end_precision: Set(
                 history.recording_date_end_precision
             ),
-            created_at: NotSet,
-            updated_at: NotSet,
         };
         update_model.update(self.conn()).await?;
         // Update the release and all related entities

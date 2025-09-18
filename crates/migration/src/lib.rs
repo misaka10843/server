@@ -42,7 +42,6 @@ migrations![
     m20250828_124137_change_duration_to_integer,
     m20250901_053512_create_release_disc,
     m20250918_080000_make_song_credit_role_optional,
-    m20250122_000000_add_entity_timestamps,
 ];
 
 macro_rules! migration {

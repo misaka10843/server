@@ -57,8 +57,6 @@ pub async fn create_artist(
         current_location_country,
         current_location_province,
         current_location_city,
-        created_at: NotSet,
-        updated_at: NotSet,
     };
 
     let artist = artist_model.insert(conn).await?;
@@ -173,8 +171,6 @@ pub async fn apply_update(
         start_location_country: Set(history.start_location_country),
         start_location_province: Set(history.start_location_province),
         start_location_city: Set(history.start_location_city),
-        created_at: NotSet,
-        updated_at: NotSet,
     }
     .update(db)
     .await?;

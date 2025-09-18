@@ -1,4 +1,3 @@
-use chrono::{DateTime, Utc};
 use entity::enums::EntityType;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -23,7 +22,6 @@ pub struct Song {
     pub languages: Vec<Language>,
     pub localized_titles: Vec<LocalizedTitle>,
     pub lyrics: Vec<SongLyrics>,
-    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Clone, Debug, ToSchema, Serialize)]

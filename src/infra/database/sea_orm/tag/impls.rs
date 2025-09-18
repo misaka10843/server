@@ -34,8 +34,6 @@ pub async fn apply_correction(
         r#type: Set(history.r#type),
         short_description: Set(history.short_description),
         description: Set(history.description),
-        created_at: NotSet,
-        updated_at: NotSet,
     };
 
     active_model.update(tx).await?;

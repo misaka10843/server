@@ -1,5 +1,4 @@
 use sea_orm::ActiveValue::{NotSet, Set};
-use chrono::Utc;
 
 use crate::{release, release_history, tag, tag_history};
 
@@ -19,8 +18,6 @@ impl From<(i32, &release_history::Model)> for release::ActiveModel {
             recording_date_end_precision: Set(
                 model.recording_date_end_precision
             ),
-            created_at: Set(Utc::now().into()),
-            updated_at: Set(Utc::now().into()),
         }
     }
 }
@@ -33,8 +30,6 @@ impl From<&tag_history::Model> for tag::ActiveModel {
             r#type: Set(value.r#type),
             short_description: Set(value.short_description.clone()),
             description: Set(value.description.clone()),
-            created_at: Set(Utc::now().into()),
-            updated_at: Set(Utc::now().into()),
         }
     }
 }

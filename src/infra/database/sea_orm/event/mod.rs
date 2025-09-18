@@ -8,7 +8,7 @@ use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbErr,
     EntityTrait, IntoActiveValue, LoaderTrait, ModelTrait, QueryFilter,
-    QueryOrder, QuerySelect, Set,
+    QueryOrder, Set,
 };
 use sea_query::extension::postgres::PgBinOper;
 use sea_query::{ExprTrait, Func};
@@ -18,7 +18,6 @@ use crate::domain::event::model::{AlternativeName, Event, NewEvent};
 use crate::domain::event::repo::{Repo, TxRepo};
 use crate::domain::repository::Connection;
 use crate::domain::shared::model::DateWithPrecision;
-use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 
 impl<T> Repo for T
 where
@@ -53,34 +52,6 @@ where
                     .binary(PgBinOper::SimilarityDistance, search_term),
             );
         find_many_impl(selector, self.conn()).await.boxed()
-    }
-
-    async fn find_by_time(
-        &self,
-        cursor: TimeCursor,
-    ) -> Result<TimePaginated<Event>, Box<dyn std::error::Error + Send + Sync>> {
-        let mut select = event::Entity::find()
-            .order_by_desc(event::Column::CreatedAt)
-            .limit(u64::from(cursor.limit));
-
-        // Apply cursor filter if provided
-        if let Some(after) = cursor.after {
-            select = select.filter(event::Column::CreatedAt.lt(after));
-        }
-
-        let events = find_many_impl(select, self.conn()).await?;
-        
-        // Get next cursor from last item if we have results and hit the limit
-        let next_cursor = if events.len() == usize::from(cursor.limit) {
-            events.last().map(|event| event.created_at)
-        } else {
-            None
-        };
-
-        Ok(TimePaginated {
-            items: events,
-            next_cursor,
-        })
     }
 }
 
@@ -120,7 +91,6 @@ async fn find_many_impl(
                     name: an.name,
                 })
                 .collect_vec(),
-            created_at: event.created_at.to_utc(),
         })
         .collect_vec();
 
@@ -183,8 +153,6 @@ async fn create_event_and_relations(
             .end_date
             .map(|d| d.precision)
             .into_active_value(),
-        created_at: NotSet,
-        updated_at: NotSet,
     };
 
     let event = event_model.insert(tx).await?;
@@ -315,8 +283,6 @@ async fn apply_correction(
         start_date_precision: Set(history.start_date_precision),
         end_date: Set(history.end_date),
         end_date_precision: Set(history.end_date_precision),
-        created_at: NotSet,
-        updated_at: NotSet,
     };
 
     active_model.update(tx).await?;

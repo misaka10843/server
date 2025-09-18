@@ -1,4 +1,3 @@
-use chrono::{DateTime, Utc};
 use entity::sea_orm_active_enums::ReleaseType;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -34,7 +33,6 @@ pub struct Release {
     pub discs: Vec<ReleaseDisc>,
     pub tracks: Vec<ReleaseTrack>,
     pub events: Vec<SimpleEvent>,
-    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Clone, Debug, ToSchema, Serialize, Deserialize)]

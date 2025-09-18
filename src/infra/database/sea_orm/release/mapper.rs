@@ -31,8 +31,6 @@ impl From<&NewRelease> for release::ActiveModel {
                 .recording_date_end
                 .as_ref()
                 .map_or(DatePrecision::Day, |dp| dp.precision)),
-            created_at: NotSet,
-            updated_at: NotSet,
         }
     }
 }

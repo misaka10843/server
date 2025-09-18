@@ -1,6 +1,5 @@
 use super::model::{Event, NewEvent};
 use crate::domain::repository::{Connection, Transaction};
-use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 
 pub trait Repo: Connection {
     async fn find_by_id(
@@ -12,12 +11,6 @@ pub trait Repo: Connection {
         &self,
         keyword: &str,
     ) -> Result<Vec<Event>, Box<dyn std::error::Error + Send + Sync>>;
-
-    /// Get events ordered by creation time (newest first) with cursor pagination
-    async fn find_by_time(
-        &self,
-        cursor: TimeCursor,
-    ) -> Result<TimePaginated<Event>, Box<dyn std::error::Error + Send + Sync>>;
 }
 
 pub trait TxRepo: Repo + Transaction

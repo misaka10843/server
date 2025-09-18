@@ -8,7 +8,6 @@ use crate::domain::correction::{
 use crate::domain::release::repo::Filter;
 use crate::domain::release::{NewRelease, Release, Repo, TxRepo};
 use crate::domain::repository::TransactionManager;
-use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 use crate::infra::error::Error;
 
 #[derive(Clone)]
@@ -79,10 +78,6 @@ where
         filter: Filter,
     ) -> Result<Vec<Release>, Error> {
         Ok(self.repo.find_many(filter).await?)
-    }
-
-    pub async fn find_by_time(&self, cursor: TimeCursor) -> Result<TimePaginated<Release>, Error> {
-        Ok(self.repo.find_by_time(cursor).await?)
     }
 }
 

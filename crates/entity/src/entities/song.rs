@@ -12,8 +12,6 @@ pub struct Model {
     pub id: i32,
     #[sea_orm(column_type = "Text")]
     pub title: String,
-    pub created_at: DateTimeWithTimeZone,
-    pub updated_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

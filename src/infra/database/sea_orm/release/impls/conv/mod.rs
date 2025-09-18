@@ -64,7 +64,6 @@ pub(super) fn conv_to_domain_model(
             .clone()
             .map(domain::image::Image::from)
             .map(|image| image.url()),
-        created_at: release_model.created_at.to_utc(),
     }
 }
 

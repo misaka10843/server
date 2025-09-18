@@ -1,5 +1,4 @@
 use sea_orm::ActiveValue::Set;
-use chrono::Utc;
 
 use crate::{artist, artist_history};
 
@@ -24,8 +23,6 @@ impl From<(i32, &artist_history::Model)> for artist::ActiveModel {
                 .current_location_province
                 .clone()),
             current_location_city: Set(value.current_location_city.clone()),
-            created_at: Set(Utc::now().into()),
-            updated_at: Set(Utc::now().into()),
         }
     }
 }

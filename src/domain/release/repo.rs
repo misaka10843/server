@@ -1,5 +1,4 @@
 use crate::domain::repository::{Connection, Transaction};
-use crate::domain::shared::repository::{TimeCursor, TimePaginated};
 
 pub enum Filter {
     Id(i32),
@@ -25,12 +24,6 @@ pub trait Repo: Connection {
         &self,
         id: i32,
     ) -> Result<bool, Box<dyn std::error::Error + Send + Sync>>;
-    
-    /// Get releases ordered by creation time (newest first) with cursor pagination
-    async fn find_by_time(
-        &self,
-        cursor: TimeCursor,
-    ) -> Result<TimePaginated<super::model::Release>, Box<dyn std::error::Error + Send + Sync>>;
 }
 
 pub trait TxRepo: Transaction + Repo
