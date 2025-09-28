@@ -57,7 +57,9 @@ mod alloc {
 #[tokio::main]
 #[snafu::report]
 async fn main() -> Result<(), Whatever> {
-    dotenvy::dotenv().whatever_context("Failed to load .env file")?;
+    if std::env::var_os("DOTENV_DISABLED").is_none() {
+        dotenvy::dotenv().whatever_context("Failed to load .env file")?;
+    }
 
     Logger::init();
 
