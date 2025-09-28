@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17-alpine@sha256:f325a29ec9deb7039c5f07761d77d79d537dac836ecd99f982f6ca5476724604
+    image: postgres:17-alpine@sha256:855021a5b10954343902a8c22a15f8464233126c1d12d9ad84d4a14c5af07a80
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
